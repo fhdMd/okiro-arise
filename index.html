@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Shadow Warrior Training System</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary-dark: #0a0e1a;
+            --secondary-dark: #141824;
+            --accent-blue: #3d5af1;
+            --accent-purple: #8b5cf6;
+            --accent-gold: #f59e0b;
+            --text-primary: #e5e7eb;
+            --text-secondary: #9ca3af;
+            --success: #10b981;
+            --danger: #ef4444;
+            --shadow-glow: rgba(61, 90, 241, 0.4);
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, #1a1f3a 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(61, 90, 241, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .app-container {
+            position: relative;
+            z-index: 1;
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background: rgba(10, 14, 26, 0.8);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 100px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, rgba(20, 24, 36, 0.95) 0%, rgba(26, 31, 58, 0.95) 100%);
+            padding: 1.5rem 1.25rem;
+            border-bottom: 2px solid rgba(61, 90, 241, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+        }
+
+        .header-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.75rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #3d5af1 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            letter-spacing: 2px;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 30px var(--shadow-glow);
+        }
+
+        /* Player Stats */
+        .player-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(61, 90, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+            border: 1px solid rgba(61, 90, 241, 0.3);
+            border-radius: 12px;
+            padding: 0.75rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, transparent 0%, rgba(61, 90, 241, 0.1) 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            margin-top: 0.25rem;
+            font-family: 'Cinzel', serif;
+        }
+
+        .level-progress {
+            margin-top: 1rem;
+        }
+
+        .progress-bar-container {
+            background: rgba(20, 24, 36, 0.8);
+            border: 1px solid rgba(61, 90, 241, 0.3);
+            border-radius: 20px;
+            height: 24px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            box-shadow: 0 0 20px var(--shadow-glow);
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            z-index: 1;
+        }
+
+        /* Navigation */
+        .nav-tabs {
+            display: flex;
+            gap: 0.5rem;
+            padding: 1rem 1.25rem;
+            background: rgba(20, 24, 36, 0.6);
+            border-bottom: 1px solid rgba(61, 90, 241, 0.2);
+            overflow-x: auto;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            background: rgba(61, 90, 241, 0.1);
+            border: 1px solid rgba(61, 90, 241, 0.3);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 20px var(--shadow-glow);
+        }
+
+        .nav-tab:hover:not(.active) {
+            background: rgba(61, 90, 241, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Content */
+        .content {
+            padding: 1.25rem;
+        }
+
+        .view {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Month Card */
+        .month-card {
+            background: linear-gradient(135deg, rgba(20, 24, 36, 0.95) 0%, rgba(26, 31, 58, 0.95) 100%);
+            border: 2px solid rgba(61, 90, 241, 0.3);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .month-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(61, 90, 241, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .month-card.locked {
+            opacity: 0.6;
+            filter: grayscale(0.5);
+        }
+
+        .month-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .month-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+        }
+
+        .month-badge {
+            background: linear-gradient(135deg, var(--accent-gold) 0%, #fbbf24 100%);
+            color: var(--primary-dark);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .month-description {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .month-progress {
+            margin-top: 1rem;
+        }
+
+        /* Workout Card */
+        .workout-card {
+            background: rgba(20, 24, 36, 0.8);
+            border: 1px solid rgba(61, 90, 241, 0.3);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .workout-card:hover {
+            transform: translateX(5px);
+            border-color: var(--accent-blue);
+            box-shadow: 0 4px 20px rgba(61, 90, 241, 0.2);
+        }
+
+        .workout-card.completed {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .workout-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .workout-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .workout-status {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--accent-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .workout-card.completed .workout-status {
+            background: var(--success);
+            border-color: var(--success);
+        }
+
+        .workout-card.completed .workout-status::after {
+            content: '✓';
+            color: white;
+            font-weight: bold;
+        }
+
+        .workout-details {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Exercise Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            animation: fadeIn 0.3s;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, rgba(20, 24, 36, 0.98) 0%, rgba(26, 31, 58, 0.98) 100%);
+            border: 2px solid rgba(61, 90, 241, 0.5);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 450px;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 1.5rem;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.3s;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(61, 90, 241, 0.3);
+        }
+
+        .modal-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+        }
+
+        .close-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            font-size: 1.25rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            background: var(--danger);
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        .exercise-item {
+            background: rgba(61, 90, 241, 0.05);
+            border: 1px solid rgba(61, 90, 241, 0.2);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .exercise-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .exercise-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .exercise-checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--accent-blue);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .exercise-checkbox.checked {
+            background: var(--success);
+            border-color: var(--success);
+        }
+
+        .exercise-checkbox.checked::after {
+            content: '✓';
+            color: white;
+            font-weight: bold;
+            font-size: 0.875rem;
+        }
+
+        .exercise-reps {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .complete-workout-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            margin-top: 1.5rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 20px var(--shadow-glow);
+        }
+
+        .complete-workout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px var(--shadow-glow);
+        }
+
+        .complete-workout-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Level Up Animation */
+        .level-up-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .level-up-overlay.active {
+            display: flex;
+            animation: fadeIn 0.5s;
+        }
+
+        .level-up-content {
+            text-align: center;
+            animation: levelUpPulse 1s infinite;
+        }
+
+        @keyframes levelUpPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .level-up-title {
+            font-family: 'Cinzel', serif;
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--accent-gold) 0%, #fbbf24 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 40px var(--accent-gold);
+        }
+
+        .level-up-message {
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            margin-bottom: 2rem;
+        }
+
+        .level-up-stats {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .level-up-stat {
+            text-align: center;
+        }
+
+        .level-up-stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .level-up-stat-value {
+            font-family: 'Cinzel', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+        }
+
+        /* Stats View */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stats-card {
+            background: linear-gradient(135deg, rgba(20, 24, 36, 0.95) 0%, rgba(26, 31, 58, 0.95) 100%);
+            border: 2px solid rgba(61, 90, 241, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .stats-card-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stats-card-value {
+            font-family: 'Cinzel', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            margin-bottom: 0.25rem;
+        }
+
+        .stats-card-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Achievements */
+        .achievement-card {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(251, 191, 36, 0.1) 100%);
+            border: 2px solid rgba(245, 158, 11, 0.3);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .achievement-card.locked {
+            opacity: 0.4;
+            filter: grayscale(1);
+        }
+
+        .achievement-icon {
+            font-size: 3rem;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .achievement-info {
+            flex: 1;
+        }
+
+        .achievement-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--accent-gold);
+            margin-bottom: 0.25rem;
+        }
+
+        .achievement-description {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .header-title {
+                font-size: 1.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .level-up-title {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-title">⚔️ SHADOW WARRIOR ⚔️</div>
+            
+            <div class="player-stats">
+                <div class="stat-card">
+                    <div class="stat-label">Level</div>
+                    <div class="stat-value" id="playerLevel">1</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Power</div>
+                    <div class="stat-value" id="playerPower">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Workouts</div>
+                    <div class="stat-value" id="totalWorkouts">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Streak</div>
+                    <div class="stat-value" id="streakDays">0</div>
+                </div>
+            </div>
+
+            <div class="level-progress">
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="levelProgressBar" style="width: 0%"></div>
+                    <div class="progress-text" id="levelProgressText">0 / 100 EXP</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav-tabs">
+            <div class="nav-tab active" onclick="switchView('training')">Training</div>
+            <div class="nav-tab" onclick="switchView('stats')">Stats</div>
+            <div class="nav-tab" onclick="switchView('achievements')">Achievements</div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Training View -->
+            <div class="view active" id="trainingView">
+                <!-- Month 1 -->
+                <div class="month-card" id="month1">
+                    <div class="month-header">
+                        <div class="month-title">Month 1: Foundation</div>
+                        <div class="month-badge">Beginner</div>
+                    </div>
+                    <div class="month-description">
+                        Build your foundation with full body workouts. Train 3 times per week to awaken your inner warrior.
+                    </div>
+                    <div class="month-progress">
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="month1Progress" style="width: 0%"></div>
+                            <div class="progress-text" id="month1ProgressText">0 / 12 Workouts</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="month1Workouts"></div>
+
+                <!-- Month 2 -->
+                <div class="month-card locked" id="month2">
+                    <div class="month-header">
+                        <div class="month-title">Month 2: Intensity</div>
+                        <div class="month-badge">Intermediate</div>
+                    </div>
+                    <div class="month-description">
+                        Increase intensity with split routines and skill training. Train 4 times per week to elevate your power.
+                    </div>
+                    <div class="month-progress">
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="month2Progress" style="width: 0%"></div>
+                            <div class="progress-text" id="month2ProgressText">0 / 16 Workouts</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="month2Workouts"></div>
+
+                <!-- Month 3 -->
+                <div class="month-card locked" id="month3">
+                    <div class="month-header">
+                        <div class="month-title">Month 3: Mastery</div>
+                        <div class="month-badge">Advanced</div>
+                    </div>
+                    <div class="month-description">
+                        Master advanced skills and reach peak performance. Train 4-5 times per week to become a legend.
+                    </div>
+                    <div class="month-progress">
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="month3Progress" style="width: 0%"></div>
+                            <div class="progress-text" id="month3ProgressText">0 / 16 Workouts</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="month3Workouts"></div>
+            </div>
+
+            <!-- Stats View -->
+            <div class="view" id="statsView">
+                <div class="stats-grid">
+                    <div class="stats-card">
+                        <div class="stats-card-icon">💪</div>
+                        <div class="stats-card-value" id="totalExercises">0</div>
+                        <div class="stats-card-label">Exercises</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-card-icon">🔥</div>
+                        <div class="stats-card-value" id="caloriesBurned">0</div>
+                        <div class="stats-card-label">Calories</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-card-icon">⏱️</div>
+                        <div class="stats-card-value" id="totalTime">0</div>
+                        <div class="stats-card-label">Minutes</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-card-icon">📈</div>
+                        <div class="stats-card-value" id="completionRate">0%</div>
+                        <div class="stats-card-label">Completion</div>
+                    </div>
+                </div>
+
+                <h3 style="font-family: 'Cinzel', serif; font-size: 1.5rem; margin-bottom: 1rem; color: var(--accent-blue);">Training History</h3>
+                <div id="historyList"></div>
+            </div>
+
+            <!-- Achievements View -->
+            <div class="view" id="achievementsView">
+                <div id="achievementsList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Workout Modal -->
+    <div class="modal" id="workoutModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modalTitle"></div>
+                <div class="close-btn" onclick="closeModal()">×</div>
+            </div>
+            <div id="exercisesList"></div>
+            <button class="complete-workout-btn" id="completeBtn" onclick="completeWorkout()">
+                Complete Workout
+            </button>
+        </div>
+    </div>
+
+    <!-- Level Up Overlay -->
+    <div class="level-up-overlay" id="levelUpOverlay">
+        <div class="level-up-content">
+            <div class="level-up-title">LEVEL UP!</div>
+            <div class="level-up-message">You've reached Level <span id="newLevel"></span></div>
+            <div class="level-up-stats">
+                <div class="level-up-stat">
+                    <div class="level-up-stat-label">Power Gained</div>
+                    <div class="level-up-stat-value">+10</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+// Training Program Data - Compact version
+const trainingProgram = {
+    month1: {
+        name: "Month 1: Building Foundation",
+        workouts: Array(12).fill().map((_, i) => ({
+            name: `Week ${Math.floor(i/3) + 1} - Workout ${(i % 3) + 1}`,
+            type: "Full Body",
+            exercises: [
+                { name: "Warm-up", reps: "5-10 minutes light cardio" },
+                { name: "Push-ups", reps: "3 sets × 8-12 reps" },
+                { name: "Pull-ups/Inverted Rows", reps: "3 sets × 5-8 reps" },
+                { name: "Dips", reps: "3 sets × 8-12 reps" },
+                { name: "Squats", reps: "3 sets × 15-20 reps" },
+                { name: "Lunges", reps: "3 sets × 10-15 reps per leg" },
+                { name: "Plank", reps: "3 sets × 30-60 seconds" },
+                { name: "Cool down", reps: "5-10 minutes stretching" }
+            ]
+        }))
+    },
+    month2: {
+        name: "Month 2: Increasing Intensity",
+        workouts: (() => {
+            const workouts = [];
+            for (let week = 5; week <= 8; week++) {
+                workouts.push({
+                    name: `Week ${week} - Upper Body`,
+                    type: "Upper Body",
+                    exercises: [
+                        { name: "Warm-up", reps: "5-10 minutes light cardio" },
+                        { name: "Push-ups", reps: "4 sets × 10-15 reps" },
+                        { name: "Pull-ups/Inverted Rows", reps: "4 sets × 6-10 reps" },
+                        { name: "Dips", reps: "4 sets × 10-15 reps" },
+                        { name: "Pike Push-ups", reps: "3 sets × 8-12 reps" },
+                        { name: "Plank to Push-up", reps: "3 sets × 10-15 reps" },
+                        { name: "Cool down", reps: "5-10 minutes stretching" }
+                    ]
+                });
+                for (let day = 0; day < 2; day++) {
+                    workouts.push({
+                        name: `Week ${week} - Lower Body & Core`,
+                        type: "Lower Body & Core",
+                        exercises: [
+                            { name: "Warm-up", reps: "5-10 minutes light cardio" },
+                            { name: "Squats", reps: "4 sets × 20-25 reps" },
+                            { name: "Lunges", reps: "4 sets × 15-20 reps per leg" },
+                            { name: "Glute Bridges", reps: "3 sets × 20-25 reps" },
+                            { name: "Calf Raises", reps: "3 sets × 20-25 reps" },
+                            { name: "Hanging Leg Raises", reps: "3 sets × 8-12 reps" },
+                            { name: "Russian Twists", reps: "3 sets × 20 reps per side" },
+                            { name: "Cool down", reps: "5-10 minutes stretching" },
+                            ...(day === 0 ? [
+                                { name: "Skill: Handstand Practice", reps: "3 sets × 20-30 seconds" },
+                                { name: "Skill: L-Sit Progressions", reps: "3 sets × 10-15 seconds" }
+                            ] : [])
+                        ]
+                    });
+                }
+                workouts.push({
+                    name: `Week ${week} - Upper Body`,
+                    type: "Upper Body",
+                    exercises: [
+                        { name: "Warm-up", reps: "5-10 minutes light cardio" },
+                        { name: "Push-ups", reps: "4 sets × 10-15 reps" },
+                        { name: "Pull-ups/Inverted Rows", reps: "4 sets × 6-10 reps" },
+                        { name: "Dips", reps: "4 sets × 10-15 reps" },
+                        { name: "Pike Push-ups", reps: "3 sets × 8-12 reps" },
+                        { name: "Plank to Push-up", reps: "3 sets × 10-15 reps" },
+                        { name: "Cool down", reps: "5-10 minutes stretching" }
+                    ]
+                });
+            }
+            return workouts;
+        })()
+    },
+    month3: {
+        name: "Month 3: Skill Focus & Advanced",
+        workouts: (() => {
+            const workouts = [];
+            for (let week = 9; week <= 12; week++) {
+                workouts.push({
+                    name: `Week ${week} - Upper Body`,
+                    type: "Upper Body",
+                    exercises: [
+                        { name: "Warm-up", reps: "5-10 minutes light cardio" },
+                        { name: "Decline Push-ups", reps: "4 sets × 10-15 reps" },
+                        { name: "Pull-ups", reps: "4 sets × 8-12 reps" },
+                        { name: "Dips", reps: "4 sets × 10-15 reps" },
+                        { name: "Archer Push-ups", reps: "3 sets × 6-10 reps per side" },
+                        { name: "Plank to Push-up", reps: "3 sets × 15-20 reps" },
+                        { name: "Cool down", reps: "5-10 minutes stretching" }
+                    ]
+                });
+                for (let day = 0; day < 2; day++) {
+                    workouts.push({
+                        name: `Week ${week} - Lower Body & Core`,
+                        type: "Lower Body & Core",
+                        exercises: [
+                            { name: "Warm-up", reps: "5-10 minutes light cardio" },
+                            { name: "Pistol Squats (assisted)", reps: "4 sets × 6-10 reps per leg" },
+                            { name: "Bulgarian Split Squats", reps: "4 sets × 10-15 reps per leg" },
+                            { name: "Single-Leg Glute Bridges", reps: "3 sets × 15-20 reps per leg" },
+                            { name: "Calf Raises", reps: "3 sets × 25-30 reps" },
+                            { name: "Hanging Leg Raises", reps: "3 sets × 10-15 reps" },
+                            { name: "Windshield Wipers", reps: "3 sets × 10-15 reps per side" },
+                            { name: "Cool down", reps: "5-10 minutes stretching" },
+                            ...(day === 0 ? [
+                                { name: "Skill: Free-standing Handstands", reps: "3 sets × 20-30 seconds" },
+                                { name: "Skill: L-Sit Hold", reps: "3 sets × 10-20 seconds" },
+                                { name: "Skill: Muscle-Up Progressions", reps: "3 sets × 3-5 reps" }
+                            ] : [])
+                        ]
+                    });
+                }
+                workouts.push({
+                    name: `Week ${week} - Upper Body`,
+                    type: "Upper Body",
+                    exercises: [
+                        { name: "Warm-up", reps: "5-10 minutes light cardio" },
+                        { name: "Decline Push-ups", reps: "4 sets × 10-15 reps" },
+                        { name: "Pull-ups", reps: "4 sets × 8-12 reps" },
+                        { name: "Dips", reps: "4 sets × 10-15 reps" },
+                        { name: "Archer Push-ups", reps: "3 sets × 6-10 reps per side" },
+                        { name: "Plank to Push-up", reps: "3 sets × 15-20 reps" },
+                        { name: "Cool down", reps: "5-10 minutes stretching" }
+                    ]
+                });
+            }
+            return workouts;
+        })()
+    }
+};
+
+// Achievements
+const achievements = [
+    { id: 'first_workout', icon: '🎯', title: 'First Steps', description: 'Complete your first workout', unlocked: false },
+    { id: 'week_warrior', icon: '⚔️', title: 'Week Warrior', description: 'Complete all workouts in a week', unlocked: false },
+    { id: 'month_master', icon: '👑', title: 'Month Master', description: 'Complete Month 1', unlocked: false },
+    { id: 'consistency_king', icon: '🔥', title: 'Consistency King', description: 'Maintain a 7-day streak', unlocked: false },
+    { id: 'halfway_hero', icon: '💎', title: 'Halfway Hero', description: 'Complete 50% of the program', unlocked: false },
+    { id: 'shadow_monarch', icon: '👹', title: 'Shadow Monarch', description: 'Complete the entire 3-month program', unlocked: false },
+    { id: 'power_100', icon: '⚡', title: 'Power Surge', description: 'Reach 100 Power', unlocked: false },
+    { id: 'level_10', icon: '🌟', title: 'Rising Star', description: 'Reach Level 10', unlocked: false }
+];
+
+// App State
+let appState = {
+    level: 1,
+    exp: 0,
+    power: 0,
+    totalWorkouts: 0,
+    streakDays: 0,
+    completedWorkouts: {},
+    currentWorkout: null,
+    workoutProgress: {},
+    lastWorkoutDate: null,
+    achievements: achievements,
+    history: []
+};
+
+// Load saved state
+function loadState() {
+    const saved = localStorage.getItem('shadowWarriorState');
+    if (saved) {
+        appState = { ...appState, ...JSON.parse(saved) };
+        updateUI();
+    }
+}
+
+// Save state
+function saveState() {
+    localStorage.setItem('shadowWarriorState', JSON.stringify(appState));
+}
+
+// Initialize app
+function init() {
+    loadState();
+    renderWorkouts();
+    renderAchievements();
+    updateUI();
+}
+
+// Render workouts
+function renderWorkouts() {
+    const months = ['month1', 'month2', 'month3'];
+    
+    months.forEach((monthKey, monthIndex) => {
+        const month = trainingProgram[monthKey];
+        const container = document.getElementById(`${monthKey}Workouts`);
+        
+        const isLocked = monthIndex > 0 && !isMonthUnlocked(monthIndex);
+        
+        if (isLocked) {
+            container.style.display = 'none';
+        } else {
+            container.style.display = 'block';
+            container.innerHTML = '';
+            month.workouts.forEach((workout, index) => {
+                const workoutId = `${monthKey}_${index}`;
+                const isCompleted = appState.completedWorkouts[workoutId];
+                
+                const card = document.createElement('div');
+                card.className = `workout-card ${isCompleted ? 'completed' : ''}`;
+                card.onclick = () => openWorkout(monthKey, index);
+                
+                card.innerHTML = `
+                    <div class="workout-header">
+                        <div class="workout-title">${workout.name}</div>
+                        <div class="workout-status"></div>
+                    </div>
+                    <div class="workout-details">
+                        <span>📋 ${workout.exercises.length} exercises</span>
+                        <span>🎯 ${workout.type}</span>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+    });
+}
+
+// Check if month is unlocked
+function isMonthUnlocked(monthIndex) {
+    if (monthIndex === 0) return true;
+    
+    const prevMonthKey = `month${monthIndex}`;
+    const prevMonth = trainingProgram[prevMonthKey];
+    const totalWorkouts = prevMonth.workouts.length;
+    
+    let completed = 0;
+    for (let i = 0; i < totalWorkouts; i++) {
+        if (appState.completedWorkouts[`${prevMonthKey}_${i}`]) {
+            completed++;
+        }
+    }
+    
+    return completed === totalWorkouts;
+}
+
+// Open workout
+function openWorkout(monthKey, workoutIndex) {
+    const month = trainingProgram[monthKey];
+    const workout = month.workouts[workoutIndex];
+    const workoutId = `${monthKey}_${workoutIndex}`;
+    
+    appState.currentWorkout = { monthKey, workoutIndex, id: workoutId };
+    
+    document.getElementById('modalTitle').textContent = workout.name;
+    
+    const exercisesList = document.getElementById('exercisesList');
+    exercisesList.innerHTML = '';
+    
+    if (!appState.workoutProgress[workoutId]) {
+        appState.workoutProgress[workoutId] = {};
+    }
+    
+    workout.exercises.forEach((exercise, index) => {
+        const exerciseId = `ex_${index}`;
+        const isChecked = appState.workoutProgress[workoutId][exerciseId];
+        
+        const item = document.createElement('div');
+        item.className = 'exercise-item';
+        item.innerHTML = `
+            <div class="exercise-header">
+                <div class="exercise-name">${exercise.name}</div>
+                <div class="exercise-checkbox ${isChecked ? 'checked' : ''}" 
+                     onclick="toggleExercise('${exerciseId}')"></div>
+            </div>
+            <div class="exercise-reps">${exercise.reps}</div>
+        `;
+        
+        exercisesList.appendChild(item);
+    });
+    
+    document.getElementById('workoutModal').classList.add('active');
+}
+
+// Close modal
+function closeModal() {
+    document.getElementById('workoutModal').classList.remove('active');
+    appState.currentWorkout = null;
+}
+
+// Toggle exercise
+function toggleExercise(exerciseId) {
+    const workoutId = appState.currentWorkout.id;
+    
+    if (!appState.workoutProgress[workoutId]) {
+        appState.workoutProgress[workoutId] = {};
+    }
+    
+    appState.workoutProgress[workoutId][exerciseId] = !appState.workoutProgress[workoutId][exerciseId];
+    
+    const checkbox = event.target;
+    checkbox.classList.toggle('checked');
+    
+    saveState();
+}
+
+// Complete workout
+function completeWorkout() {
+    const { monthKey, workoutIndex, id } = appState.currentWorkout;
+    const month = trainingProgram[monthKey];
+    const workout = month.workouts[workoutIndex];
+    
+    const progress = appState.workoutProgress[id] || {};
+    const totalExercises = workout.exercises.length;
+    const completedExercises = Object.values(progress).filter(v => v).length;
+    
+    if (completedExercises !== totalExercises) {
+        alert('Please complete all exercises before finishing the workout!');
+        return;
+    }
+    
+    appState.completedWorkouts[id] = true;
+    appState.totalWorkouts++;
+    
+    appState.history.unshift({
+        date: new Date().toISOString(),
+        workout: workout.name,
+        exercises: totalExercises
+    });
+    
+    updateStreak();
+    
+    const expGained = 25;
+    addExp(expGained);
+    
+    appState.power += 5;
+    
+    checkAchievements();
+    
+    updateMonthProgress();
+    
+    saveState();
+    updateUI();
+    
+    closeModal();
+    
+    renderWorkouts();
+}
+
+// Add EXP
+function addExp(amount) {
+    const expNeeded = appState.level * 100;
+    appState.exp += amount;
+    
+    if (appState.exp >= expNeeded) {
+        levelUp();
+    }
+}
+
+// Level up
+function levelUp() {
+    appState.level++;
+    appState.exp = 0;
+    appState.power += 10;
+    
+    document.getElementById('newLevel').textContent = appState.level;
+    document.getElementById('levelUpOverlay').classList.add('active');
+    
+    setTimeout(() => {
+        document.getElementById('levelUpOverlay').classList.remove('active');
+    }, 3000);
+}
+
+// Update streak
+function updateStreak() {
+    const today = new Date().toDateString();
+    
+    if (appState.lastWorkoutDate) {
+        const lastDate = new Date(appState.lastWorkoutDate).toDateString();
+        const yesterday = new Date(Date.now() - 86400000).toDateString();
+        
+        if (lastDate === today) {
+            // Same day, no change
+        } else if (lastDate === yesterday) {
+            appState.streakDays++;
+        } else {
+            appState.streakDays = 1;
+        }
+    } else {
+        appState.streakDays = 1;
+    }
+    
+    appState.lastWorkoutDate = new Date().toISOString();
+}
+
+// Check achievements
+function checkAchievements() {
+    const achievements = appState.achievements;
+    
+    if (appState.totalWorkouts >= 1 && !achievements.find(a => a.id === 'first_workout').unlocked) {
+        unlockAchievement('first_workout');
+    }
+    
+    if (appState.power >= 100 && !achievements.find(a => a.id === 'power_100').unlocked) {
+        unlockAchievement('power_100');
+    }
+    
+    if (appState.level >= 10 && !achievements.find(a => a.id === 'level_10').unlocked) {
+        unlockAchievement('level_10');
+    }
+    
+    if (appState.streakDays >= 7 && !achievements.find(a => a.id === 'consistency_king').unlocked) {
+        unlockAchievement('consistency_king');
+    }
+    
+    const month1Complete = trainingProgram.month1.workouts.every((_, i) => 
+        appState.completedWorkouts[`month1_${i}`]
+    );
+    if (month1Complete && !achievements.find(a => a.id === 'month_master').unlocked) {
+        unlockAchievement('month_master');
+    }
+    
+    const totalWorkouts = trainingProgram.month1.workouts.length + 
+                        trainingProgram.month2.workouts.length + 
+                        trainingProgram.month3.workouts.length;
+    if (appState.totalWorkouts >= totalWorkouts / 2 && !achievements.find(a => a.id === 'halfway_hero').unlocked) {
+        unlockAchievement('halfway_hero');
+    }
+    
+    if (appState.totalWorkouts >= totalWorkouts && !achievements.find(a => a.id === 'shadow_monarch').unlocked) {
+        unlockAchievement('shadow_monarch');
+    }
+}
+
+// Unlock achievement
+function unlockAchievement(achievementId) {
+    const achievement = appState.achievements.find(a => a.id === achievementId);
+    if (achievement) {
+        achievement.unlocked = true;
+    }
+}
+
+// Update month progress
+function updateMonthProgress() {
+    ['month1', 'month2', 'month3'].forEach(monthKey => {
+        const month = trainingProgram[monthKey];
+        const totalWorkouts = month.workouts.length;
+        
+        let completed = 0;
+        for (let i = 0; i < totalWorkouts; i++) {
+            if (appState.completedWorkouts[`${monthKey}_${i}`]) {
+                completed++;
+            }
+        }
+        
+        const percentage = (completed / totalWorkouts) * 100;
+        const progressBar = document.getElementById(`${monthKey}Progress`);
+        const progressText = document.getElementById(`${monthKey}ProgressText`);
+        
+        if (progressBar) {
+            progressBar.style.width = `${percentage}%`;
+        }
+        if (progressText) {
+            progressText.textContent = `${completed} / ${totalWorkouts} Workouts`;
+        }
+        
+        const monthCard = document.getElementById(monthKey);
+        const monthIndex = parseInt(monthKey.replace('month', '')) - 1;
+        
+        if (isMonthUnlocked(monthIndex)) {
+            monthCard.classList.remove('locked');
+        } else {
+            monthCard.classList.add('locked');
+        }
+    });
+}
+
+// Update UI
+function updateUI() {
+    document.getElementById('playerLevel').textContent = appState.level;
+    document.getElementById('playerPower').textContent = appState.power;
+    document.getElementById('totalWorkouts').textContent = appState.totalWorkouts;
+    document.getElementById('streakDays').textContent = appState.streakDays;
+    
+    const expNeeded = appState.level * 100;
+    const expPercentage = (appState.exp / expNeeded) * 100;
+    document.getElementById('levelProgressBar').style.width = `${expPercentage}%`;
+    document.getElementById('levelProgressText').textContent = `${appState.exp} / ${expNeeded} EXP`;
+    
+    updateMonthProgress();
+    updateStatsView();
+}
+
+// Update stats view
+function updateStatsView() {
+    const totalExercises = appState.history.reduce((sum, h) => sum + h.exercises, 0);
+    const totalTime = appState.totalWorkouts * 45;
+    const caloriesBurned = appState.totalWorkouts * 300;
+    
+    const totalPossibleWorkouts = trainingProgram.month1.workouts.length + 
+                                trainingProgram.month2.workouts.length + 
+                                trainingProgram.month3.workouts.length;
+    const completionRate = Math.round((appState.totalWorkouts / totalPossibleWorkouts) * 100);
+    
+    document.getElementById('totalExercises').textContent = totalExercises;
+    document.getElementById('totalTime').textContent = totalTime;
+    document.getElementById('caloriesBurned').textContent = caloriesBurned;
+    document.getElementById('completionRate').textContent = `${completionRate}%`;
+    
+    const historyList = document.getElementById('historyList');
+    historyList.innerHTML = '';
+    
+    appState.history.slice(0, 10).forEach(h => {
+        const date = new Date(h.date);
+        const card = document.createElement('div');
+        card.className = 'workout-card completed';
+        card.innerHTML = `
+            <div class="workout-header">
+                <div class="workout-title">${h.workout}</div>
+            </div>
+            <div class="workout-details">
+                <span>📅 ${date.toLocaleDateString()}</span>
+                <span>💪 ${h.exercises} exercises</span>
+            </div>
+        `;
+        historyList.appendChild(card);
+    });
+    
+    if (appState.history.length === 0) {
+        historyList.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No workouts completed yet. Start your journey!</p>';
+    }
+}
+
+// Render achievements
+function renderAchievements() {
+    const container = document.getElementById('achievementsList');
+    container.innerHTML = '';
+    
+    appState.achievements.forEach(achievement => {
+        const card = document.createElement('div');
+        card.className = `achievement-card ${!achievement.unlocked ? 'locked' : ''}`;
+        card.innerHTML = `
+            <div class="achievement-icon">${achievement.icon}</div>
+            <div class="achievement-info">
+                <div class="achievement-title">${achievement.title}</div>
+                <div class="achievement-description">${achievement.description}</div>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+// Switch view
+function switchView(viewName) {
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    document.querySelectorAll('.view').forEach(view => {
+        view.classList.remove('active');
+    });
+    document.getElementById(`${viewName}View`).classList.add('active');
+    
+    if (viewName === 'achievements') {
+        renderAchievements();
+    }
+}
+
+// Initialize app on load
+window.addEventListener('DOMContentLoaded', init);
+</script></body></html>
